@@ -72,7 +72,6 @@ pub struct ConfigState {
     pub colors_count: FormattedNumber,
     pub force_matrix_option: ForceMatrixType,
     pub half_side: f32,
-    pub hidden: FormattedToggle,
     pub body_mesh: Option<Handle<Mesh>>,
     pub panel_width: f32,
     pub position_option: PositionerType,
@@ -87,10 +86,6 @@ impl Default for ConfigState {
             colors_count: FormattedNumber::new(COLORS),
             force_matrix_option: ForceMatrixType::Random(RandomForceMatrix),
             half_side: 0.0,
-            hidden: FormattedToggle {
-                value: true,
-                texts: [String::from(" Hide "), String::from(" Show ")],
-            },
             body_mesh: None,
             panel_width: 200.0,
             position_option: PositionerType::Uniform,

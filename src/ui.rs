@@ -2,7 +2,7 @@ use bevy::{prelude::*, diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin
 use bevy_egui::*;
 use strum::IntoEnumIterator;
 use crate::{
-    config::FormatableValue, physics::forces::ForceMatrix, providers::positioners::PositionerType, AppState, ConfigState
+    AppState, ConfigState, ShowUi, config::FormatableValue, physics::forces::ForceMatrix, providers::positioners::PositionerType
 };
 
 const LEFT_PANEL: &'static str = "CONFIG";
@@ -11,6 +11,7 @@ pub fn ui_system(
     mut config: ResMut<ConfigState>,
     mut force_matrix: ResMut<ForceMatrix>,
     mut gui: EguiContexts,
+    mut vis_state: ResMut<NextState<ShowUi>>,
     diagnostics: Res<DiagnosticsStore>,
     key_state: Res<ButtonInput<KeyCode>>,
 ) {
@@ -27,8 +28,8 @@ pub fn ui_system(
     egui::SidePanel::left(LEFT_PANEL)
         .show(ctx, |ui| {
             ui.horizontal(|ui| {
-                if ui.button(config.hidden.get_str()).clicked() {
-                    config.hidden.toggle();
+                if ui.button("Hide").clicked() {
+                    vis_state.set(ShowUi::No);
                 }
                 if let Some(value) = diagnostics
                     .get(&FrameTimeDiagnosticsPlugin::FPS)
@@ -37,66 +38,65 @@ pub fn ui_system(
                     ui.label(format!("{value:.0} fps"));
                 }
             });
-            if !config.hidden.get_value() {
-                egui::ScrollArea::vertical().show(ui, |ui| {
-                    // load/save
-                    ui.horizontal(|ui| {
-                        if ui.button(" Load ").clicked() {
 
-                        }
-                        if ui.button(" Save ").clicked() {
+            egui::ScrollArea::vertical().show(ui, |ui| {
+                // load/save
+                ui.horizontal(|ui| {
+                    if ui.button(" Load ").clicked() {
 
-                        }
-                    });
-                    // particle count
-                    ui.label("Particle Count:");
-                    ui.horizontal(|ui| {
-                        if ui.button(" - ").clicked() {
-                            let bodies_count = config.bodies_count.get_value();
-                            config.bodies_count.set_value(safe_inc(bodies_count, -inc_amt));
-                        }
-                        if ui.button(" + ").clicked() {
-                            let bodies_count = config.bodies_count.get_value();
-                            config.bodies_count.set_value(safe_inc(bodies_count, inc_amt));
-                        }
-                        ui.label(config.bodies_count.get_str());
-                    });
-                    // color count
-                    ui.label("Color Type Count:");
-                    ui.horizontal(|ui| {
-                        if ui.button(" - ").clicked() {
-                            let colors_count = config.colors_count.get_value();
-                            config.colors_count.set_value(safe_inc(colors_count, -1).max(1));
-                            force_matrix.shrink();
-                        }
-                        if ui.button(" + ").clicked() {
-                            let colors_count = config.colors_count.get_value();
-                            config.colors_count.set_value(safe_inc(colors_count, 1));
-                            force_matrix.expand();
-                        }
-                        ui.label(config.colors_count.get_str());
-                    });
+                    }
+                    if ui.button(" Save ").clicked() {
 
-                    force_matrix.force_matrix_ui(ui, &mut config);
-
-                    ui.horizontal(|ui| {
-                        if ui.button(" Update ").clicked() {
-                            config.reset_bodies = true;
-                        }
-                        egui::ComboBox::from_label("Positions")
-                            .selected_text(format!("{:?}", config.position_option))
-                            .show_ui(ui, |ui| {
-                                // ui.style_mut().wrap = Some(false);
-                                ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Truncate);
-                                ui.set_min_width(60.0);
-                                for f in PositionerType::iter() {
-                                    ui.selectable_value(&mut config.position_option, f, format!("{:?}", f));
-                                }
-                            });
-                        ui.end_row();
-                    });
+                    }
                 });
-            }
+                // particle count
+                ui.label("Particle Count:");
+                ui.horizontal(|ui| {
+                    if ui.button(" - ").clicked() {
+                        let bodies_count = config.bodies_count.get_value();
+                        config.bodies_count.set_value(safe_inc(bodies_count, -inc_amt));
+                    }
+                    if ui.button(" + ").clicked() {
+                        let bodies_count = config.bodies_count.get_value();
+                        config.bodies_count.set_value(safe_inc(bodies_count, inc_amt));
+                    }
+                    ui.label(config.bodies_count.get_str());
+                });
+                // color count
+                ui.label("Color Type Count:");
+                ui.horizontal(|ui| {
+                    if ui.button(" - ").clicked() {
+                        let colors_count = config.colors_count.get_value();
+                        config.colors_count.set_value(safe_inc(colors_count, -1).max(1));
+                        force_matrix.shrink();
+                    }
+                    if ui.button(" + ").clicked() {
+                        let colors_count = config.colors_count.get_value();
+                        config.colors_count.set_value(safe_inc(colors_count, 1));
+                        force_matrix.expand();
+                    }
+                    ui.label(config.colors_count.get_str());
+                });
+
+                force_matrix.force_matrix_ui(ui, &mut config);
+
+                ui.horizontal(|ui| {
+                    if ui.button(" Update ").clicked() {
+                        config.reset_bodies = true;
+                    }
+                    egui::ComboBox::from_label("Positions")
+                        .selected_text(format!("{:?}", config.position_option))
+                        .show_ui(ui, |ui| {
+                            // ui.style_mut().wrap = Some(false);
+                            ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Truncate);
+                            ui.set_min_width(60.0);
+                            for f in PositionerType::iter() {
+                                ui.selectable_value(&mut config.position_option, f, format!("{:?}", f));
+                            }
+                        });
+                    ui.end_row();
+                });
+            });
             //running
             ui.horizontal(|ui| {
                 ui.label("Running: ");
@@ -116,13 +116,20 @@ fn safe_inc(value: usize, amount: isize) -> usize {
 
 pub fn toggle_running(
     mut next_state: ResMut<NextState<AppState>>,
-    app_state: Res<State<AppState>>,
-    key_state: Res<ButtonInput<KeyCode>>,
+    state: Res<State<AppState>>,
 ) {
-    if key_state.just_pressed(KeyCode::Space) {
-        match app_state.get() {
-            &AppState::Running => next_state.set(AppState::Paused),
-            &AppState::Paused => next_state.set(AppState::Running),
-        }
+    match state.get() {
+        AppState::Running => next_state.set(AppState::Paused),
+        AppState::Paused => next_state.set(AppState::Running),
+    }
+}
+
+pub fn toggle_visible(
+    mut next_state: ResMut<NextState<ShowUi>>,
+    state: Res<State<ShowUi>>,
+) {
+    match state.get() {
+        ShowUi::Yes => next_state.set(ShowUi::No),
+        ShowUi::No => next_state.set(ShowUi::Yes),
     }
 }

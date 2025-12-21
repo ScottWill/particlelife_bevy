@@ -1,7 +1,5 @@
 use bevy::{
-    diagnostic::FrameTimeDiagnosticsPlugin,
-    prelude::*,
-    window::{PrimaryWindow, WindowMode}
+    diagnostic::FrameTimeDiagnosticsPlugin, input::common_conditions::input_just_pressed, prelude::*, window::{PrimaryWindow, WindowMode}
 };
 use bevy_egui::{EguiPlugin, EguiPrimaryContextPass};
 use bevy_pancam::{PanCam, PanCamPlugin};
@@ -24,6 +22,13 @@ mod providers;
 mod ui;
 
 const RADIUS: f32 = 0.5833334; // 0.5 * (0.5 + 2.0 / 3.0);
+
+#[derive(States, PartialEq, Eq, Debug, Clone, Hash, Default)]
+enum ShowUi {
+    #[default]
+    Yes,
+    No,
+}
 
 #[derive(States, PartialEq, Eq, Debug, Clone, Hash, Default)]
 enum AppState {
@@ -49,14 +54,16 @@ fn main() {
             PanCamPlugin::default(),
         ))
         .init_state::<AppState>()
+        .init_state::<ShowUi>()
         .add_systems(Startup, setup)
         .add_systems(Update, (
             match_body_count,
             update_bodies.run_if(in_state(AppState::Running)),
             palette::update_palette,
-            ui::toggle_running,
+            ui::toggle_running.run_if(input_just_pressed(KeyCode::Space)),
+            ui::toggle_visible.run_if(input_just_pressed(KeyCode::Escape)),
         ))
-        .add_systems(EguiPrimaryContextPass, ui::ui_system)
+        .add_systems(EguiPrimaryContextPass, ui::ui_system.run_if(in_state(ShowUi::Yes)))
         .run();
 }
 
@@ -154,7 +161,7 @@ fn spawn_particle(commands: &mut Commands, config: &ConfigState, palette: &Palet
     });
 }
 
-const DT: f64 = 1.0 / 120.0;
+const DT: f64 = 1.0 / 60.0;
 
 fn update_bodies(
     mut physics: ResMut<ParticlePhysics>,
