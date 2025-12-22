@@ -97,14 +97,6 @@ pub fn ui_system(
                     ui.end_row();
                 });
             });
-            //running
-            ui.horizontal(|ui| {
-                ui.label("Running: ");
-                if ui.button(config.running.get_str()).clicked() {
-                    let running = config.running.get_value();
-                    config.running.set_value(!running);
-                }
-            });
 
         });
 
@@ -132,4 +124,10 @@ pub fn toggle_visible(
         ShowUi::Yes => next_state.set(ShowUi::No),
         ShowUi::No => next_state.set(ShowUi::Yes),
     }
+}
+
+pub fn negate_forces(
+    mut force_matrix: ResMut<ForceMatrix>,
+) {
+    force_matrix.negate();
 }

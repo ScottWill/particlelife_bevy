@@ -29,16 +29,10 @@ struct ForceCell {
 
 impl ForceCell {
     fn new(data: f64) -> Self {
-        // let mut cell = ForceCell::default();
-        // cell.update(data);
-        // cell
         Self { data }
     }
 
     fn force_cell_ui(&mut self, ui: &mut Ui) {
-        // let desired_size = ui.spacing().interact_size.y * egui::vec2(1.0, 1.0);
-        // let (rect, mut response) = ui.allocate_exact_size(desired_size, egui::Sense::click());
-        // ui.label(&self.text);
         ui.add(DragValue::new(&mut self.data).speed(0.01));
     }
 
@@ -137,15 +131,18 @@ impl ForceMatrix {
         }
     }
 
+    #[inline]
     fn data_ix(&self, x: usize, y: usize) -> usize {
         x + y * self.color_count
     }
 
+    #[inline]
     fn get_data(&self, x: usize, y: usize) -> Option<&ForceCell> {
         let ix = self.data_ix(x, y);
         self.data.get(ix)
     }
 
+    #[inline]
     pub fn get_force(&self, x: usize, y: usize) -> f64 {
         match self.get_data(x, y) {
             Some(force) => force.data,
@@ -159,7 +156,7 @@ impl ForceMatrix {
         }
     }
 
-    fn negate(&mut self) {
+    pub fn negate(&mut self) {
         for cell in &mut self.data {
             cell.negate();
         }

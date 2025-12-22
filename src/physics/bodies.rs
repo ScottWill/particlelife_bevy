@@ -1,7 +1,7 @@
 use bevy::prelude::Component;
 use glam::DVec2;
 
-const DRAG_HALFLIFE: f64 = 1.0 / 0.043;
+const DRAG_HALFLIFE: f64 = 23.255813953488374;
 
 #[derive(Clone, Copy, Component, Debug, Default)]
 pub struct PointBody {
@@ -20,14 +20,6 @@ impl PointBody {
         }
     }
 
-    // pub fn color(&self) -> usize {
-    //     self.color
-    // }
-
-    // pub fn set_color(&mut self, color: usize) {
-    //     self.color = color;
-    // }
-
     pub fn step(&mut self, force: DVec2, dt: f64) {
         // degrade velocity before adding force
         self.velocity *= 0.5f64.powf(DRAG_HALFLIFE * dt);
@@ -36,9 +28,5 @@ impl PointBody {
         self.position += self.velocity * dt;
         self.position = self.position.rem_euclid(DVec2::ONE);
     }
-
-    // pub fn position(&self) -> &DVec2 {
-    //     &self.position
-    // }
 
 }

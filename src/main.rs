@@ -1,5 +1,8 @@
 use bevy::{
-    diagnostic::FrameTimeDiagnosticsPlugin, input::common_conditions::input_just_pressed, prelude::*, window::{PrimaryWindow, WindowMode}
+    dev_tools::fps_overlay::{FpsOverlayConfig, FpsOverlayPlugin, FrameTimeGraphConfig},
+    input::common_conditions::input_just_pressed,
+    prelude::*,
+    window::{PrimaryWindow, WindowMode},
 };
 use bevy_egui::{EguiPlugin, EguiPrimaryContextPass};
 use bevy_pancam::{PanCam, PanCamPlugin};
@@ -11,8 +14,9 @@ use physics::{
     forces::ForceMatrix,
     physics::ParticlePhysics,
 };
-use providers::positioners::*;
 use rand::Rng as _;
+
+use crate::providers::positioners::get_position;
 
 mod config;
 mod palette;
@@ -50,7 +54,14 @@ fn main() {
                     ..default()
                 }),
             EguiPlugin::default(),
-            FrameTimeDiagnosticsPlugin::default(),
+            FpsOverlayPlugin {
+                config: FpsOverlayConfig {
+                    text_config: TextFont::default().with_font_size(14.0),
+                    text_color: Color::linear_rgb(0.0, 1.0, 0.0),
+                    frame_time_graph_config: FrameTimeGraphConfig::target_fps(120.0),
+                    ..Default::default()
+                },
+            },
             PanCamPlugin::default(),
         ))
         .init_state::<AppState>()
@@ -62,6 +73,7 @@ fn main() {
             palette::update_palette,
             ui::toggle_running.run_if(input_just_pressed(KeyCode::Space)),
             ui::toggle_visible.run_if(input_just_pressed(KeyCode::Escape)),
+            ui::negate_forces.run_if(input_just_pressed(KeyCode::KeyN)),
         ))
         .add_systems(EguiPrimaryContextPass, ui::ui_system.run_if(in_state(ShowUi::Yes)))
         .run();
@@ -161,25 +173,22 @@ fn spawn_particle(commands: &mut Commands, config: &ConfigState, palette: &Palet
     });
 }
 
-const DT: f64 = 1.0 / 60.0;
-
 fn update_bodies(
     mut physics: ResMut<ParticlePhysics>,
     mut query: Query<(&mut Transform, &mut PointBody)>,
     config: Res<ConfigState>,
     force_matrix: Res<ForceMatrix>,
+    time: Res<Time<Fixed>>,
 ) {
     let bodies = query
         .iter()
         .map(|(_, body)| body)
         .collect::<Vec<_>>();
     let forces = physics.get_forces(&bodies, &force_matrix);
-    query.iter_mut()
-        .enumerate()
-        .for_each(|(i, (mut transform, mut body))| {
-            body.step(forces[i], DT);
-            *transform = get_offset_transform(vec3(&body.position), &config);
-        });
+    for (i, (mut transform, mut body)) in query.iter_mut().enumerate() {
+        body.step(forces[i], time.delta_secs_f64());
+        *transform = get_offset_transform(vec3(&body.position), &config);
+    }
 }
 
 #[inline]

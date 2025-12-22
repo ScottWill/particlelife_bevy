@@ -42,30 +42,6 @@ impl FormattedNumber {
     }
 }
 
-#[derive(Clone, Debug)]
-pub struct FormattedToggle {
-    value: bool,
-    texts: [String; 2],
-}
-
-impl FormattedToggle {
-    pub fn toggle(&mut self) {
-        self.set_value(!self.value);
-    }
-}
-
-impl FormatableValue<bool> for FormattedToggle {
-    fn set_value(&mut self, value: bool) {
-        self.value = value;
-    }
-    fn get_value(&self) -> bool {
-        self.value
-    }
-    fn get_str(&self) -> &str {
-        &self.texts[self.value as usize]
-    }
-}
-
 #[derive(Clone, Debug, Resource)]
 pub struct ConfigState {
     pub bodies_count: FormattedNumber,
@@ -76,7 +52,6 @@ pub struct ConfigState {
     pub panel_width: f32,
     pub position_option: PositionerType,
     pub reset_bodies: bool,
-    pub running: FormattedToggle,
 }
 
 impl Default for ConfigState {
@@ -90,10 +65,6 @@ impl Default for ConfigState {
             panel_width: 200.0,
             position_option: PositionerType::Uniform,
             reset_bodies: true,
-            running: FormattedToggle {
-                value: true,
-                texts: [String::from(" Run "), String::from(" Pause ")],
-            },
         }
     }
 }

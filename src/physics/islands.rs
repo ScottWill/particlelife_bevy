@@ -31,7 +31,7 @@ impl IslandManager {
         this
     }
 
-    // pre-compile the indices of each island's group
+    // cache the computed indices of each island's group
     fn setup_neighbors(&mut self) {
         let side = self.side as isize;
         self.neighbor_ixs.clear();
@@ -59,19 +59,15 @@ impl IslandManager {
         }
         // for each body, add its index to the appropriate island
         // based on its current position
-        for bx in 0..bodies.len() {
-            let body = bodies[bx];
+        for (bx, body) in bodies.iter().enumerate() {
             let ix = self.get_local_island_ix(&body.position);
             if let Some(island) = self.islands.get_mut(ix) {
                 island.push(bx);
             }
         }
-        // shrink capacity of each island to keep memory usage low
-        for island in &mut self.islands {
-            island.shrink_to_fit();
-        }
     }
 
+    #[inline]
     pub fn get_neighboring_ixs(&self, pos: &DVec2) -> Vec<usize> {
         let ix = self.get_local_island_ix(pos);
         self.get_local_body_ixs(ix)
@@ -84,6 +80,7 @@ impl IslandManager {
         x + y * self.side
     }
 
+    #[inline]
     fn get_local_body_ixs(&self, i: usize) -> Vec<usize> {
         let mut ixs = Vec::new();
         if let Some(nixs) = self.neighbor_ixs.get(i) {

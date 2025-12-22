@@ -3,10 +3,10 @@ use glam::DVec2;
 use rayon::prelude::*;
 use super::{islands::IslandManager, forces::ForceMatrix, bodies::PointBody};
 
-const MAX_DIST: f64 = 0.02;
+const MAX_DIST: f64 = 0.02; // The maximum distance that a particle can interact with another
 const MAX_DIST_RECIP: f64 = 1.0 / MAX_DIST;
 const MAX_DIST_SQRD: f64 = MAX_DIST * MAX_DIST;
-const MIN_REL_DIST: f64 = 0.3;
+const MIN_REL_DIST: f64 = 0.3; // The minimum relative distance that two particles can interact with
 const MIN_DIST_RECIP: f64 = 1.0 / MIN_REL_DIST;
 const INV_MIN_DIST_RECIP: f64 = 1.0 / (1.0 - MIN_REL_DIST);
 
@@ -38,7 +38,6 @@ impl ParticlePhysics {
                 let mut total_force = DVec2::ZERO;
                 for jx in self.islands.get_neighboring_ixs(&body0.position) {
                     if ix == jx { continue }
-                    // narrow phase
                     total_force += get_force(body0, &bodies[jx], force_matrix);
                 }
                 total_force
@@ -57,14 +56,15 @@ fn get_force(body0: &PointBody, body1: &PointBody, forces: &ForceMatrix) -> DVec
     } else {
         let pos = min_pos * MAX_DIST_RECIP;
         let dist = pos.length();
-        let force = if dist <= MIN_REL_DIST {
-            dist * MIN_DIST_RECIP - 1.0
+        let force;
+        if dist <= MIN_REL_DIST {
+            force = dist * MIN_DIST_RECIP - 1.0;
         } else {
             let f = forces.get_force(body0.color, body1.color);
             if f == 0.0 {
                 return DVec2::ZERO;
             }
-            f * (1.0 - (1.0 + MIN_REL_DIST - 2.0 * dist) * INV_MIN_DIST_RECIP)
+            force = f * (1.0 - (1.0 + MIN_REL_DIST - 2.0 * dist) * INV_MIN_DIST_RECIP);
         };
         pos * force / dist * MAX_DIST
     }
