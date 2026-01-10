@@ -173,6 +173,8 @@ fn spawn_particle(commands: &mut Commands, config: &ConfigState, palette: &Palet
     });
 }
 
+// const G: f32 = 6.6743e-2;
+
 fn update_bodies(
     mut physics: ResMut<ParticlePhysics>,
     mut query: Query<(&mut Transform, &mut PointBody)>,

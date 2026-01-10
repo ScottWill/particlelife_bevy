@@ -20,52 +20,9 @@ enum ForceShiftType {
     Row,
 }
 
-#[derive(Clone, Default)]
-struct ForceCell {
-    // color: Color32,
-    data: f64,
-    // text: String,
-}
-
-impl ForceCell {
-    fn new(data: f64) -> Self {
-        Self { data }
-    }
-
-    fn force_cell_ui(&mut self, ui: &mut Ui) {
-        ui.add(DragValue::new(&mut self.data).speed(0.01));
-    }
-
-    fn abs(&mut self) {
-        // self.update(self.data.abs());
-        self.data = self.data.abs();
-    }
-
-    fn negate(&mut self) {
-        // self.update(self.data * -1.0);
-        self.data *= -1.0;
-    }
-
-    // fn update(&mut self, data: f64) {
-    //     self.data = if data == -0.0 {
-    //         0.0
-    //     } else {
-    //         data.clamp(-1.0, 1.0)
-    //     };
-    //     self.text = format!("{:.2}", self.data);
-    // }
-
-}
-
-impl From<f64> for ForceCell {
-    fn from(value: f64) -> Self {
-        ForceCell::new(value)
-    }
-}
-
 #[derive(Clone, Resource)]
 pub struct ForceMatrix {
-    data: Vec<ForceCell>,
+    data: Vec<f64>,
     color_count: usize,
     matrix_type: ForceMatrixType,
 }
@@ -89,11 +46,8 @@ impl ForceMatrix {
                 f.into()
             })
             .collect::<Vec<_>>();
-        Self {
-            data,
-            color_count,
-            matrix_type
-        }
+
+        Self { data, color_count, matrix_type }
     }
 
     fn copy_to_clipboard(&self) {
@@ -101,7 +55,7 @@ impl ForceMatrix {
             .chunks_exact(self.color_count)
             .map(|chunk| chunk
                 .into_iter()
-                .map(|f| f.data.to_string())
+                .map(|f| f.to_string())
                 .collect::<Vec<_>>()
                 .join(",")
             )
@@ -114,7 +68,7 @@ impl ForceMatrix {
     fn paste_from_clipboard(&mut self) {
         let mut clipboard = Clipboard::new().unwrap();
         if let Ok(contents) = clipboard.get_text() {
-            let mut data: Vec<ForceCell> = Vec::with_capacity(self.color_count * self.color_count);
+            let mut data = Vec::with_capacity(self.color_count * self.color_count);
             for line in contents.lines() {
                 let parts = line.split(',').collect::<Vec<_>>();
                 for part in parts {
@@ -137,7 +91,7 @@ impl ForceMatrix {
     }
 
     #[inline]
-    fn get_data(&self, x: usize, y: usize) -> Option<&ForceCell> {
+    fn get_data(&self, x: usize, y: usize) -> Option<&f64> {
         let ix = self.data_ix(x, y);
         self.data.get(ix)
     }
@@ -145,20 +99,20 @@ impl ForceMatrix {
     #[inline]
     pub fn get_force(&self, x: usize, y: usize) -> f64 {
         match self.get_data(x, y) {
-            Some(force) => force.data,
+            Some(force) => *force,
             None => 0.0,
         }
     }
 
     fn abs(&mut self) {
         for cell in &mut self.data {
-            cell.abs();
+            *cell = cell.abs();
         }
     }
 
     pub fn negate(&mut self) {
         for cell in &mut self.data {
-            cell.negate();
+            *cell *= -1.0;
         }
     }
 
@@ -219,7 +173,7 @@ impl ForceMatrix {
                         (((i / self.color_count) as isize) + amount).rem_euclid(self.color_count as isize) as usize
                     ),
                 };
-                ForceCell::new(self.get_force(x, y))
+                self.get_force(x, y)
             })
             .collect();
     }
@@ -263,7 +217,7 @@ impl ForceMatrix {
                             let y = y * self.color_count;
                             for x in 0..self.color_count {
                                 if let Some(cell) = self.data.get_mut(x + y) {
-                                    cell.force_cell_ui(ui);
+                                    ui.add(DragValue::new(cell).speed(0.001));
                                 }
                             }
                             ui.end_row();

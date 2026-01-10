@@ -47,6 +47,7 @@ impl IslandManager {
                 let j = u.rem_euclid(side) + v.rem_euclid(side) * side;
                 neighborhood.push(j as usize);
             }
+            neighborhood.sort();
             self.neighbor_ixs.push(neighborhood);
         }
     }
