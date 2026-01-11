@@ -1,7 +1,7 @@
 use glam::DVec2;
 use rand::{Rng as _, rng};
 use strum::EnumIter;
-use std::f64::consts::TAU;
+use std::{f64::consts::TAU, fmt::{Debug, Display, Formatter, Result}};
 
 pub fn get_position(pos_type: &PositionerType) -> DVec2 {
     match pos_type {
@@ -17,7 +17,7 @@ pub fn get_position(pos_type: &PositionerType) -> DVec2 {
     }
 }
 
-#[derive(Clone, Copy, Debug, EnumIter, PartialEq)]
+#[derive(Clone, Copy, EnumIter, PartialEq)]
 pub enum PositionerType {
     BigBang,
     Circle,
@@ -28,6 +28,28 @@ pub enum PositionerType {
     Spiral,
     Uniform,
     UniformCircle,
+}
+
+impl Debug for PositionerType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        write!(f, "{}", match &self {
+            PositionerType::BigBang => "Big Bang",
+            PositionerType::Circle => "Circle",
+            PositionerType::Line => "Line",
+            PositionerType::SRing => "S Ring",
+            PositionerType::MRing => "M Ring",
+            PositionerType::LRing => "L Ring",
+            PositionerType::Spiral => "Spiral",
+            PositionerType::Uniform => "Uniform",
+            PositionerType::UniformCircle => "U Circle",
+        })
+    }
+}
+
+impl Display for PositionerType {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        Debug::fmt(&self, f)
+    }
 }
 
 pub trait Positioner {

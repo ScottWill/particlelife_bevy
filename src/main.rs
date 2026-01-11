@@ -58,7 +58,7 @@ fn main() {
                 config: FpsOverlayConfig {
                     text_config: TextFont::default().with_font_size(14.0),
                     text_color: Color::linear_rgb(0.0, 1.0, 0.0),
-                    frame_time_graph_config: FrameTimeGraphConfig::target_fps(120.0),
+                    frame_time_graph_config: FrameTimeGraphConfig::target_fps(60.0),
                     ..Default::default()
                 },
             },
@@ -147,10 +147,10 @@ fn match_body_count(
 }
 
 const CHILD_OFFSETS: [DVec2; 4] = [
-    DVec2::new(1.5, 0.5), //right
-    DVec2::new(0.5, 1.5), //top
-    DVec2::new(-0.5, 0.5), // left
-    DVec2::new(0.5, -0.5), // bottom
+    DVec2::new( 1.5,  0.5), //right
+    DVec2::new( 0.5,  1.5), //top
+    DVec2::new(-0.5,  0.5), // left
+    DVec2::new( 0.5, -0.5), // bottom
 ];
 
 fn spawn_particle(commands: &mut Commands, config: &ConfigState, palette: &Palette) {
@@ -172,8 +172,6 @@ fn spawn_particle(commands: &mut Commands, config: &ConfigState, palette: &Palet
         }
     });
 }
-
-// const G: f32 = 6.6743e-2;
 
 fn update_bodies(
     mut physics: ResMut<ParticlePhysics>,

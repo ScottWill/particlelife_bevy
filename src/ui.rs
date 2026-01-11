@@ -41,14 +41,14 @@ pub fn ui_system(
 
             egui::ScrollArea::vertical().show(ui, |ui| {
                 // load/save
-                ui.horizontal(|ui| {
-                    if ui.button(" Load ").clicked() {
+                // ui.horizontal(|ui| {
+                //     if ui.button(" Load ").clicked() {
 
-                    }
-                    if ui.button(" Save ").clicked() {
+                //     }
+                //     if ui.button(" Save ").clicked() {
 
-                    }
-                });
+                //     }
+                // });
                 // particle count
                 ui.label("Particle Count:");
                 ui.horizontal(|ui| {
@@ -91,7 +91,7 @@ pub fn ui_system(
                             ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Truncate);
                             ui.set_min_width(60.0);
                             for f in PositionerType::iter() {
-                                ui.selectable_value(&mut config.position_option, f, format!("{:?}", f));
+                                ui.selectable_value(&mut config.position_option, f, format!("{f}"));
                             }
                         });
                     ui.end_row();

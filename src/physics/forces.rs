@@ -1,3 +1,5 @@
+use std::fmt::{Debug, Display, Formatter, Result};
+
 use arboard::Clipboard;
 use bevy::prelude::Resource;
 use bevy_egui::egui::{self, DragValue, Ui};
@@ -5,14 +7,32 @@ use rand::random;
 use strum::{IntoEnumIterator, EnumIter};
 use crate::config::{ConfigState, FormatableValue};
 
-#[derive(Clone, Copy, Debug, EnumIter, PartialEq)]
+#[derive(Clone, Copy, EnumIter, PartialEq)]
 pub enum ForceMatrixType {
     Chains(ChainsForceMatrix),
     Random(RandomForceMatrix),
     Snakes(SnakeForceMatrix),
     // Symmetry(SymmetryForceMatrix),
-    Zero(ZeroForceMatrix),
-    One(IdentForceMatrix),
+    Zeros(ZeroForceMatrix),
+    Ones(IdentForceMatrix),
+}
+
+impl Debug for ForceMatrixType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        write!(f, "{}", match &self {
+            ForceMatrixType::Chains(_) => "Chains",
+            ForceMatrixType::Random(_) => "Random",
+            ForceMatrixType::Snakes(_) => "Snakes",
+            ForceMatrixType::Zeros(_) => "Zeros",
+            ForceMatrixType::Ones(_) => "Ones",
+        })
+    }
+}
+
+impl Display for ForceMatrixType {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        Debug::fmt(&self, f)
+    }
 }
 
 enum ForceShiftType {
@@ -40,8 +60,8 @@ impl ForceMatrix {
                     ForceMatrixType::Chains(p) => p.force(x, y, color_count),
                     ForceMatrixType::Random(p) => p.force(x, y, color_count),
                     ForceMatrixType::Snakes(p) => p.force(x, y, color_count),
-                    ForceMatrixType::Zero(p) => p.force(x, y, color_count),
-                    ForceMatrixType::One(p) => p.force(x, y, color_count),
+                    ForceMatrixType::Zeros(p) => p.force(x, y, color_count),
+                    ForceMatrixType::Ones(p) => p.force(x, y, color_count),
                 };
                 f.into()
             })
@@ -130,8 +150,8 @@ impl ForceMatrix {
                             ForceMatrixType::Chains(p) => p.force(x, y, new_size),
                             ForceMatrixType::Random(p) => p.force(x, y, new_size),
                             ForceMatrixType::Snakes(p) => p.force(x, y, new_size),
-                            ForceMatrixType::Zero(p) => p.force(x, y, new_size),
-                            ForceMatrixType::One(p) => p.force(x, y, new_size),
+                            ForceMatrixType::Zeros(p) => p.force(x, y, new_size),
+                            ForceMatrixType::Ones(p) => p.force(x, y, new_size),
                         };
                         f.into()
                     },
@@ -239,7 +259,7 @@ impl ForceMatrix {
                     ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Truncate);
                     ui.set_min_width(60.0);
                     for f in ForceMatrixType::iter() {
-                        ui.selectable_value(&mut config.force_matrix_option, f, format!("{:?}", f));
+                        ui.selectable_value(&mut config.force_matrix_option, f, format!("{f}"));
                     }
                 });
             ui.end_row();

@@ -20,6 +20,7 @@ impl PointBody {
         }
     }
 
+    #[inline]
     pub fn step(&mut self, force: DVec2, dt: f64) {
         // degrade velocity before adding force
         self.velocity *= 0.5f64.powf(DRAG_HALFLIFE * dt);
