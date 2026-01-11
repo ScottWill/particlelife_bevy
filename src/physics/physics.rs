@@ -52,20 +52,22 @@ fn get_force(body0: &PointBody, body1: &PointBody, forces: &ForceMatrix) -> DVec
     // shortest distance in wrapped toroidal space
     let min_pos = (body1.position - body0.position + 0.5).rem_euclid(DVec2::ONE) - 0.5;
     if min_pos.length_squared() > MAX_DIST_SQRD {
-        DVec2::ZERO
-    } else {
-        let pos = min_pos * MAX_DIST_RECIP;
-        let dist = pos.length();
-        let force;
-        if dist <= MIN_REL_DIST {
-            force = dist * MIN_DIST_RECIP - 1.0;
-        } else {
-            let f = forces.get_force(body0.color, body1.color);
-            if f == 0.0 {
-                return DVec2::ZERO;
-            }
-            force = f * (1.0 - (1.0 + MIN_REL_DIST - 2.0 * dist) * INV_MIN_DIST_RECIP);
-        };
-        pos * force / dist * MAX_DIST
+        return DVec2::ZERO;
     }
+
+    let pos = min_pos * MAX_DIST_RECIP;
+    let dist = pos.length();
+
+    let force;
+    if dist <= MIN_REL_DIST {
+        force = dist * MIN_DIST_RECIP - 1.0;
+    } else {
+        let f = forces.get_force(body0.color, body1.color);
+        if f == 0.0 {
+            return DVec2::ZERO;
+        }
+        force = f * (1.0 - (1.0 + MIN_REL_DIST - 2.0 * dist) * INV_MIN_DIST_RECIP);
+    };
+
+    force / dist * MAX_DIST * pos
 }
