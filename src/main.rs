@@ -6,7 +6,7 @@ use bevy::{
 };
 use bevy_egui::{EguiPlugin, EguiPrimaryContextPass};
 use bevy_pancam::{PanCam, PanCamPlugin};
-use config::{ConfigState, FormatableValue};
+use config::ConfigState;
 use glam::DVec2;
 use palette::Palette;
 use physics::{
@@ -86,21 +86,20 @@ fn setup(
     window: Single<&Window, With<PrimaryWindow>>,
 ) {
 
-    let side = window.height().min(window.width());
+    let side = f32::min(window.height(), window.width());
     let mesh = meshes.add(Circle::new(RADIUS));
     let config = ConfigState {
         half_side: side * 0.5,
         body_mesh: Some(mesh.clone()),
         ..default()
     };
-    let colors_count = config.colors_count.get_value();
+    let colors_count = config.colors_count as usize;
 
     commands.insert_resource(ForceMatrix::new(colors_count, config.force_matrix_option));
-    commands.insert_resource(Palette::new(&mut materials, config.colors_count.get_value()));
+    commands.insert_resource(Palette::new(&mut materials, colors_count));
     commands.insert_resource(ParticlePhysics::default());
     commands.insert_resource(config);
 
-    // let limit = side * (1.0 + 2.0 / 3.0);
     commands.spawn((
         Camera2d,
         PanCam {
@@ -123,14 +122,16 @@ fn match_body_count(
         for entity in query.iter() {
             commands.entity(entity).despawn();
         }
-        for _ in 0..config.bodies_count.get_value() {
-            spawn_particle(&mut commands, &config, &palette);
+        for _ in 0..config.bodies_count {
+            build_particle(&mut commands, &config, &palette);
         }
     } else {
-        let mut current_size = query.iter().count();
-        let target_size = config.bodies_count.get_value();
+        let mut current_size = query.count();
+        let target_size = config.bodies_count as usize;
+        if current_size == target_size { return }
+
         while current_size < target_size {
-            spawn_particle(&mut commands, &config, &palette);
+            build_particle(&mut commands, &config, &palette);
             current_size += 1;
         }
         let mut rng = rand::rng();
@@ -153,7 +154,7 @@ const CHILD_OFFSETS: [DVec2; 4] = [
     DVec2::new( 0.5, -0.5), // bottom
 ];
 
-fn spawn_particle(commands: &mut Commands, config: &ConfigState, palette: &Palette) {
+fn build_particle(commands: &mut Commands, config: &ConfigState, palette: &Palette) {
     let color = palette.random_ix();
     let body = PointBody::new(color, get_position(&config.position_option));
     let mut entity = commands.spawn((

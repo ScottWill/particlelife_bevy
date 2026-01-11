@@ -5,47 +5,13 @@ use crate::{
 };
 
 // defaults
-const BODIES: usize = 20_000;
-const COLORS: usize = 7;
-
-pub trait FormatableValue<T> {
-    fn get_str(&self) -> &str;
-    fn get_value(&self) -> T;
-    fn set_value(&mut self, value: T);
-}
-
-#[derive(Clone, Debug)]
-pub struct FormattedNumber {
-    value: usize,
-    string: String,
-}
-
-impl FormatableValue<usize> for FormattedNumber {
-    fn set_value(&mut self, value: usize) {
-        self.value = value;
-        self.string = value.to_string();
-    }
-    fn get_value(&self) -> usize {
-        self.value
-    }
-    fn get_str(&self) -> &str {
-        &self.string
-    }
-}
-
-impl FormattedNumber {
-    fn new(value: usize) -> Self {
-        Self {
-            value,
-            string: value.to_string()
-        }
-    }
-}
+const BODIES: u16 = 20_000;
+const COLORS: u8 = 7;
 
 #[derive(Clone, Debug, Resource)]
 pub struct ConfigState {
-    pub bodies_count: FormattedNumber,
-    pub colors_count: FormattedNumber,
+    pub bodies_count: u16,
+    pub colors_count: u8,
     pub force_matrix_option: ForceMatrixType,
     pub half_side: f32,
     pub body_mesh: Option<Handle<Mesh>>,
@@ -57,8 +23,8 @@ pub struct ConfigState {
 impl Default for ConfigState {
     fn default() -> Self {
         Self {
-            bodies_count: FormattedNumber::new(BODIES),
-            colors_count: FormattedNumber::new(COLORS),
+            bodies_count: BODIES,
+            colors_count: COLORS,
             force_matrix_option: ForceMatrixType::Random(RandomForceMatrix),
             half_side: 0.0,
             body_mesh: None,

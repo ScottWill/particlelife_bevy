@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use rand::random;
-use crate::{physics::bodies::PointBody, config::{ConfigState, FormatableValue}};
+use crate::{physics::bodies::PointBody, config::ConfigState};
 
 #[derive(Resource)]
 pub struct Palette {
@@ -46,7 +46,7 @@ pub fn update_palette(
     mut query: Query<(&mut MeshMaterial2d<ColorMaterial>, &mut PointBody)>,
     config: Res<ConfigState>,
 ) {
-    let size = config.colors_count.get_value();
+    let size = config.colors_count as usize;
     if size != palette.size {
         // re-init palette
         *palette = Palette::new(&mut materials, size);

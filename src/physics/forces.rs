@@ -5,7 +5,7 @@ use bevy::prelude::Resource;
 use bevy_egui::egui::{self, DragValue, Ui};
 use rand::random;
 use strum::{IntoEnumIterator, EnumIter};
-use crate::config::{ConfigState, FormatableValue};
+use crate::config::ConfigState;
 
 #[derive(Clone, Copy, EnumIter, PartialEq)]
 pub enum ForceMatrixType {
@@ -248,9 +248,7 @@ impl ForceMatrix {
         // forces select
         ui.horizontal(|ui| {
             if ui.button(" Update ").clicked() {
-                // *self = config.new_force_matrix();
-                let count = config.colors_count.get_value();
-                *self = ForceMatrix::new(count, config.force_matrix_option);
+                *self = ForceMatrix::new(config.colors_count as usize, config.force_matrix_option);
             }
             egui::ComboBox::from_label("Matrix")
                 .selected_text(format!("{:?}", config.force_matrix_option))

@@ -1,7 +1,7 @@
 use bevy::prelude::Component;
 use glam::DVec2;
 
-const DRAG_HALFLIFE: f64 = 23.255813953488374;
+const DRAG_HALFLIFE: f64 = 23.255813953488374; // 1.0 / 0.043
 
 #[derive(Clone, Copy, Component, Debug, Default)]
 pub struct PointBody {
