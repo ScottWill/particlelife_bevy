@@ -4,7 +4,7 @@ use strum::EnumIter;
 use std::{f64::consts::TAU, fmt::{Debug, Display, Formatter, Result}};
 
 pub fn get_position(pos_type: &PositionerType) -> DVec2 {
-    match pos_type {
+    0.5 + 0.5 * match pos_type {
         PositionerType::BigBang => BigBangPositioner::get_pos(),
         PositionerType::Circle => CirclePositioner::get_pos(),
         PositionerType::Line => LinePositioner::get_pos(),
@@ -63,8 +63,8 @@ impl Positioner for BigBangPositioner {
         let radius = rng.random::<f64>() * 0.01;
         let theta = rng.random::<f64>() * TAU;
         DVec2 {
-            x: theta.cos() * radius + 0.5,
-            y: theta.sin() * radius + 0.5
+            x: theta.cos() * radius,
+            y: theta.sin() * radius,
         }
     }
 }
@@ -73,11 +73,11 @@ pub struct CirclePositioner;
 impl Positioner for CirclePositioner {
     fn get_pos() -> DVec2 {
         let mut rng = rng();
-        let radius = rng.random::<f64>() * 0.5;
+        let radius = rng.random::<f64>();
         let theta = rng.random::<f64>() * TAU;
         DVec2 {
-            x: theta.cos() * radius + 0.5,
-            y: theta.sin() * radius + 0.5
+            x: theta.cos() * radius,
+            y: theta.sin() * radius,
         }
     }
 }
@@ -94,8 +94,8 @@ impl Positioner for LinePositioner {
     fn get_pos() -> DVec2 {
         let mut rng = rng();
         DVec2 {
-            x: rng.random::<f64>(),
-            y: rng.random::<f64>() * 0.125 + 0.5 - 0.0625
+            x: rng.random::<f64>() * 2.0 - 1.0,
+            y: (rng.random::<f64>() - 0.5) * 0.25
         }
     }
 }
@@ -107,8 +107,8 @@ impl Positioner for SRingPositioner {
         let radius = rng.random::<f64>() * 0.1 + 0.125;
         let theta = rng.random::<f64>() * TAU;
         DVec2 {
-            x: theta.cos() * radius + 0.5,
-            y: theta.sin() * radius + 0.5
+            x: theta.cos() * radius,
+            y: theta.sin() * radius,
         }
     }
 }
@@ -120,8 +120,8 @@ impl Positioner for MRingPositioner {
         let radius = rng.random::<f64>() * 0.1 + 0.25;
         let theta = rng.random::<f64>() * TAU;
         DVec2 {
-            x: theta.cos() * radius + 0.5,
-            y: theta.sin() * radius + 0.5
+            x: theta.cos() * radius,
+            y: theta.sin() * radius,
         }
     }
 }
@@ -133,8 +133,8 @@ impl Positioner for LRingPositioner {
         let radius = rng.random::<f64>() * 0.1 + 1.0 / 3.0;
         let theta = rng.random::<f64>() * TAU;
         DVec2 {
-            x: theta.cos() * radius + 0.5,
-            y: theta.sin() * radius + 0.5
+            x: theta.cos() * radius,
+            y: theta.sin() * radius,
         }
     }
 }
@@ -150,8 +150,8 @@ impl Positioner for SpiralPositioner {
         let spread = 0.5 * f.min(0.2);
         let radius = (0.9 * f + spread * spread * rng.random::<f64>()) * 0.5;
         DVec2 {
-            x: radius * angle.cos() + 0.5,
-            y: radius * angle.sin() + 0.5,
+            x: radius * angle.cos(),
+            y: radius * angle.sin(),
         }
     }
 }
@@ -160,7 +160,7 @@ pub struct UniformPositioner;
 impl Positioner for UniformPositioner {
     fn get_pos() -> DVec2 {
         let mut rng = rng();
-        DVec2 {
+        -1.0 + 2.0 * DVec2 {
             x: rng.random::<f64>(),
             y: rng.random::<f64>()
         }
@@ -171,11 +171,11 @@ pub struct UniformCirclePositioner;
 impl Positioner for UniformCirclePositioner {
     fn get_pos() -> DVec2 {
         let mut rng = rng();
-        let radius = rng.random::<f64>().sqrt() * 0.5;
+        let radius = rng.random::<f64>().sqrt();
         let theta = rng.random::<f64>() * TAU;
         DVec2 {
-            x: theta.cos() * radius + 0.5,
-            y: theta.sin() * radius + 0.5
+            x: theta.cos() * radius,
+            y: theta.sin() * radius,
         }
     }
 }

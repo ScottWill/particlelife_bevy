@@ -131,8 +131,8 @@ fn match_body_count(
         if current_size == target_size { return }
 
         while current_size < target_size {
-            build_particle(&mut commands, &config, &palette);
             current_size += 1;
+            build_particle(&mut commands, &config, &palette);
         }
         let mut rng = rand::rng();
         while current_size > target_size {
@@ -156,11 +156,12 @@ const CHILD_OFFSETS: [DVec2; 4] = [
 
 fn build_particle(commands: &mut Commands, config: &ConfigState, palette: &Palette) {
     let color = palette.random_ix();
-    let body = PointBody::new(color, get_position(&config.position_option));
+    let position = get_position(&config.position_option);
+    let body = PointBody::new(color, position);
     let mut entity = commands.spawn((
         Mesh2d(config.body_mesh.clone().unwrap()),
         MeshMaterial2d(palette.get(color).clone()),
-        get_offset_transform(vec3(&body.position), &config),
+        get_transform(vec3(&body.position), &config),
         body,
     ));
     entity.with_children(|commands| {
@@ -188,7 +189,7 @@ fn update_bodies(
     let forces = physics.get_forces(&bodies, &force_matrix);
     for (i, (mut transform, mut body)) in query.iter_mut().enumerate() {
         body.step(forces[i], time.delta_secs_f64());
-        *transform = get_offset_transform(vec3(&body.position), &config);
+        *transform = get_transform(vec3(&body.position), &config);
     }
 }
 
@@ -204,9 +205,4 @@ fn vec3(position: &DVec2) -> Vec3 {
 #[inline]
 fn get_transform(pos: Vec3, config: &ConfigState) -> Transform {
     Transform::from_translation(pos * config.half_side)
-}
-
-#[inline]
-fn get_offset_transform(pos: Vec3, config: &ConfigState) -> Transform {
-    Transform::from_translation(pos * config.half_side + Vec3::new(config.panel_width * 0.75, 0.0, 0.0))
 }

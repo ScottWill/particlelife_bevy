@@ -28,7 +28,7 @@ impl Default for ParticlePhysics {
 impl ParticlePhysics {
 
     pub fn get_forces(&mut self, bodies: &[&PointBody], force_matrix: &ForceMatrix) -> &[DVec2] {
-        // bucket bodies, broad phase
+        // bucket bodies, (broad phase?)
         self.islands.index_positions(&bodies);
         // aggregate forces
         bodies

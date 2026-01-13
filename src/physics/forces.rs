@@ -124,6 +124,12 @@ impl ForceMatrix {
         }
     }
 
+    fn soften(&mut self) {
+        for cell in &mut self.data {
+            *cell *= 2.0 / 3.0;
+        }
+    }
+
     fn abs(&mut self) {
         for cell in &mut self.data {
             *cell = cell.abs();
@@ -212,17 +218,16 @@ impl ForceMatrix {
             if ui.button(" ⬇ ").clicked() {
                 self.shift_matrix(ForceShiftType::Row, -1);
             }
+        });
+        ui.horizontal(|ui| {
             if ui.button(" Abs ").clicked() {
                 self.abs();
             }
             if ui.button(" Neg ").clicked() {
                 self.negate();
             }
-            if ui.button(" Copy ").clicked() {
-                self.copy_to_clipboard();
-            }
-            if ui.button(" Paste ").clicked() {
-                self.paste_from_clipboard();
+            if ui.button(" Soft ").clicked() {
+                self.soften();
             }
         });
         // todo: force matric color boxes
@@ -244,6 +249,15 @@ impl ForceMatrix {
                         }
                     });
             });
+
+        ui.horizontal(|ui| {
+            if ui.button(" Copy ").clicked() {
+                self.copy_to_clipboard();
+            }
+            if ui.button(" Paste ").clicked() {
+                self.paste_from_clipboard();
+            }
+        });
 
         // forces select
         ui.horizontal(|ui| {
